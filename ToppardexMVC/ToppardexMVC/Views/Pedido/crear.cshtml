@@ -1,0 +1,88 @@
+@using Topardex;
+@model Topardex.Pedido
+
+@{
+    ViewData["Title"] = "Crear Pedido";
+}
+
+<h2>Crear Pedido</h2>
+
+<form asp-action="Crear" method="post">
+    <div class="mb-3">
+        <label>Cliente Id:</label>
+        <input type="number" asp-for="IdCliente" class="form-control" required />
+    </div>
+
+    <h4>Productos</h4>
+    <table class="table" id="tablaProductos">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>
+                    <select name="Productos[0].IdProducto" class="form-select" required>
+                        <option value="">-- Seleccionar --</option>
+                        @foreach (var p in (IEnumerable<Producto>)ViewBag.Productos)
+                        {
+                            <option value="@p.IdProducto">@p.Nombre</option>
+                        }
+                    </select>
+                </td>
+                <td><input type="number" name="Productos[0].Cantidad" class="form-control" min="1" value="1" required /></td>
+                <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <button type="button" id="btnAgregar" class="btn btn-primary">Agregar Producto</button>
+    <br /><br />
+    <button type="submit" class="btn btn-success">Crear Pedido</button>
+</form>
+
+@section Scripts {
+<script>
+let contador = 1;
+
+document.getElementById('btnAgregar').addEventListener('click', function() {
+    const tabla = document.querySelector('#tablaProductos tbody');
+    const nuevaFila = document.createElement('tr');
+
+    nuevaFila.innerHTML = `
+        <td>
+            <select name="Productos[${contador}].IdProducto" class="form-select" required>
+                <option value="">-- Seleccionar --</option>
+                @foreach (var p in (IEnumerable<Producto>)ViewBag.Productos)
+                {
+                    <option value="@p.IdProducto">@p.Nombre</option>
+                }
+            </select>
+        </td>
+        <td><input type="number" name="Productos[${contador}].Cantidad" class="form-control" min="1" value="1" required /></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">X</button></td>
+    `;
+    tabla.appendChild(nuevaFila);
+    contador++;
+});
+
+function eliminarFila(btn) {
+    btn.closest('tr').remove();
+    actualizarIndices();
+}
+
+function actualizarIndices() {
+    const filas = document.querySelectorAll('#tablaProductos tbody tr');
+    filas.forEach((fila, index) => {
+        fila.querySelectorAll('input, select').forEach(el => {
+            const partes = el.name.split('.');
+            partes[0] = `Productos[${index}]`;
+            el.name = partes.join('.');
+        });
+    });
+}
+</script>
+}
